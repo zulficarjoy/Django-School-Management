@@ -16,28 +16,35 @@ def teachers_view(request):
     :param request:
     :return: list of teachers to logged in user, login form instead.
     """
-    teachers = Teacher.objects.all()
+    teachers = Teacher.objects.prefetch_related(
+        'designation', 'expertise').all()
     context = {'teachers': teachers}
     return render(request, 'teachers/teacher_list.html', context)
 
 
-# THIS VIEW DUPLICATES QUERY
+# THIS VIEW DUPLICATES QUEREIS
 # AND RUNS 6 QUERIES
-@login_required
-def add_teacher_view(request):
-    """
-    :param request:
-    :return: teacher add form
-    """
-    if request.method == 'POST':
-        form = TeacherForm(request.POST)
-        if form.is_valid():
-            form.save()
-            pk = form.instance.pk
-            return redirect('teachers:teacher_details', pk=pk)
-    form = TeacherForm()
-    context = {'form': form}
-    return render(request, 'teachers/add_teacher.html', context)
+# @login_required
+# def add_teacher_view(request):
+#     """
+#     :param request:
+#     :return: teacher add form
+#     """
+#     if request.method == 'POST':
+#         form = TeacherForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             pk = form.instance.pk
+#             return redirect('teachers:teacher_details', pk=pk)
+#     form = TeacherForm()
+#     context = {'form': form}
+#     return render(request, 'teachers/add_teacher.html', context)
+
+class add_teacher_view(LoginRequiredMixin, CreateView):
+    form_class = TeacherForm
+    context_object_name = 'form'
+    template_name = 'teachers/add_teacher.html'
+    # success_url = reverse_lazy('teachers:teacher_details')
 
 
 @login_required

@@ -1,0 +1,22 @@
+{% extends 'dashboard.html' %}
+
+{% block dashboard-body %}
+<div class="row">
+    <div class="col-9">
+        <form action="" method="POST">
+            {% csrf_token %}
+            <input type="number" class="form-control" name="roll" placeholder="Enter roll number">
+            <input type="number" class="form-control" name="semester" placeholder="Enter semester number">
+            <input type="submit" value="Find Result" class="btn btn-dark">
+        </form>
+
+        {% if results %}
+        <div class="card">
+            {% for result in results %}
+            <p>{{ result }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

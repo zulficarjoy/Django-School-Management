@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.db import models
 
 
@@ -31,6 +32,9 @@ class Teacher(models.Model):
 
     class Meta:
         ordering = ['joining_date', 'name']
+
+    def get_absolute_url(self):
+        return reverse('teachers:teacher_details', args=[self.id])
 
     def __str__(self):
         return '{} ({})'.format(self.name, self.designation)

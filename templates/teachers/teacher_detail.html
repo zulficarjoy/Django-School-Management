@@ -1,17 +1,19 @@
-{% extends 'layout.html' %}
+{% extends 'dashboard.html' %}
 {% load static %}
 
-{% block content %}
+{% block dashboard-body %}
 <section id="teacher-detail-section">
   <div id="teacher-detail-section--inner">
     <div class="container">
       <div class="row py-5">
         <div class="col-4">
-          <img class="teacher-profile-img" src="{% static 'images/money.jpg' %}" alt="" width="300" height="200">
+          <img class="teacher-profile-img" src="{{ teacher.photo.url }}" alt="" width="300" height="300">
         </div>
         <div class="col-8">
           <h2>{{ teacher.name }}</h2>
-          <p></p>
+          <p>{{ teacher.designation }}</p>
+          <p>{{ teacher.mobile }}</p>
+          <br>
           <a href="{% url 'teachers:delete_teacher' pk=teacher.pk %}" class="btn btn-danger">Delete Profile</a>
         </div>
       </div>

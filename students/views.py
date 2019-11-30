@@ -5,27 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from admin_tools.models import Department, Semester, SemesterCombination
-from result.models import Result
 from .models import Student
 from .forms import StudentForm
-
-
-@login_required
-def student_result_view(request):
-    if request.method == 'POST':
-        student_id = request.POST.get('student_id')
-        semester = request.POST.get('semester')
-        student = Student.objects.get(roll=student_id)
-        res_semester = Semester.objects.get(number=semester)
-        results = Result.objects.filter(student=student, semester=res_semester)
-        ctx = {
-            'semester': res_semester,
-            'results': results,
-            'student': student,
-        }
-        return render(request, 'students/result.html', ctx)
-    else:
-        return render(request, 'students/result.html')
 
 
 @login_required
@@ -72,10 +53,31 @@ def students_by_department_view(request, pk):
     students = Student.objects.select_related(
         'department', 'semester', 'ac_session').filter(department=dept_name)
     semesters = SemesterCombination.objects.select_related(
-        'department', 'semester', 'batch').all()
+        'department', 'semester', 'batch').filter(
+            department=dept_name)
     context = {'students': students,
                'semesters': semesters}
     return render(request, 'students/students_by_department.html', context)
+
+
+# TODO: Improve students filtering by
+# semester_number instead of semester obj.
+@login_required
+def students_by_semester(request, dept_pk, semester_n):
+    dept = Department.objects.get(pk=dept_pk)
+    sem = Semester.objects.get(number=semester_n)
+    students = Student.objects.select_related(
+        'department', 'semester', 'ac_session').filter(
+            department=dept, semester=sem)
+    # for sidepanel
+    semesters = SemesterCombination.objects.select_related(
+        'department', 'semester', 'batch').filter(
+            department=dept)
+    context = {'students': students,
+               'dept': dept,
+               'sem': sem,
+               'semesters': semesters}
+    return render(request, 'students/students_by_semester_of_dept.html', context)
 
 
 class student_update_view(LoginRequiredMixin, UpdateView):

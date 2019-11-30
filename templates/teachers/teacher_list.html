@@ -15,9 +15,21 @@
         <tbody>
           {% for teacher in teachers %}
           <tr>
-            <td>{{ teacher.name }}</td>
-            <td>{{ teacher.designation }}</td>
-            <td>{{ teacher.mobile|default_if_none:"" }}</td>
+            <td>
+              <a href="{% url 'teachers:teacher_details' pk=teacher.pk %}" class="text-dark">
+                {{ teacher.name }}
+              </a>
+            </td>
+            <td>
+              <a href="{% url 'teachers:teacher_details' pk=teacher.pk %}" class="text-dark">
+                {{ teacher.designation }}
+              </a>
+            </td>
+            <td>
+              <a href="{% url 'teachers:teacher_details' pk=teacher.pk %}" class="text-dark">
+                {{ teacher.mobile|default_if_none:"" }}
+              </a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

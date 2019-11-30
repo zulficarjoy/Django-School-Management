@@ -19,13 +19,15 @@ ac_session = AcademicSession.objects.get(year=2019)
 # 1-8th semester objects
 sems = []
 for i in range(1, 9):
-    sems.append(Semester.objects.get(i))
+    s = Semester.objects.get(id=i)
+    sems.append(s)
 
 
 # some departments
 depts = []
 for i in range(1, 7):
-    depts.append(Department.objects.get(pk=i))
+    d = Department.objects.get(id=i)
+    depts.append(d)
 
 
 def generate_students(n=10,semester=None, department=None):

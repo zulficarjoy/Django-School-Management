@@ -1,8 +1,10 @@
 from django.urls import path
-from students.views import student_result_view
+
+from . import views
+
 
 app_name = 'result'
 
 urlpatterns = [
-    path('<int:student_id>/<int:semester>/', student_result_view, name='show_result'),
+    path('', views.student_result, name='student_result'),
 ]

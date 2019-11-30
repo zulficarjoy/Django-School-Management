@@ -28,7 +28,9 @@
             <ul class="list-group-flush collapse" id="collapseSemester" data-parent="#accordion">
                 {% for sem in semesters %}
                 <li class="list-group-item">
-                    <a href="">{{ sem }}</a>
+                    <a href="{% url 'students:students_by_semester' sem.department.pk sem.semester.number %}">
+                        {{ sem }}
+                    </a>
                 </li>
                 {% endfor %}
             </ul>

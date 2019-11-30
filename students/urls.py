@@ -13,6 +13,6 @@ urlpatterns = [
     path('<int:pk>/delete/', views.student_delete_view, name='delete_student'),
     path('<int:pk>/students/', views.students_by_department_view,
          name='students_by_dept'),
-    path('result/', views.student_result_view, name='result'),
-
+    path('<int:dept_pk>/<int:semester_n>/', views.students_by_semester,
+         name='students_by_semester'),
 ]

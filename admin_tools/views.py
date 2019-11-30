@@ -1,7 +1,10 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, ListView
 
-from .models import Semester, Department, AcademicSession
+from .models import Semester, Department, AcademicSession, SemesterCombination
 from .forms import SemesterForm, DepartmentForm, AcademicSessionForm
 
 
@@ -68,6 +71,14 @@ def departments(request):
     return render(request, 'admin_tools/departments.html', ctx)
 
 
-@login_required
-def delete_semester(request, pk):
-    pass
+class combination_list(LoginRequiredMixin, ListView):
+    model = SemesterCombination
+    context_object_name = 'combination'
+    template_name = 'admin_tools/combinations.html'
+
+
+class create_combination(LoginRequiredMixin, CreateView):
+    model = SemesterCombination
+    fields = '__all__'
+    template_name = 'admin_tools/create_combination.html'
+    success_url = reverse_lazy('admin_tools:combinations')
