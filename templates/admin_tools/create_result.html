@@ -1,0 +1,10 @@
+{% extends 'dashboard.html' %}
+{% load crispy_forms_tags %}
+
+{% block dashboard-body %}
+<form action="" method="POST">
+	{% csrf_token %}
+	{{ form|crispy }}
+	<input type="submit" value="Create" class="btn btn-dark">
+</form>
+{% endblock %}
