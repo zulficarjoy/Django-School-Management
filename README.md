@@ -25,16 +25,48 @@ And finally, while django server is running, run this command on another termina
 + Create braintree sandbox account from: https://sandbox.braintreegateway.com/login
 
 # Usage/testing
-In order to test this project with dummy data:
+Use provided [fixtures](https://docs.djangoproject.com/en/3.1/howto/initial-data/) for each applications. <br>
+*Provided Fixtures:*
+- teachers/teacher_fixtures.json
+*How to load fixtures?* <br>
+*For example, you want to load `teachers/teacher_fixtures.json` <br>
+you have to simply run this management command on your terminal:*
+`python manage.py loaddata teachers/teacher_fixtures.json`
+<br>
+this command will load initial data for teachers app.
+Follow the same pattern to install initial data for other applications.
 
-* `populate_department` script to create departments
-* create an academic session object from admin or dashboard
-* populate_teachers
-* populate_students
+### Fixture Load Order:
++ `python manage.py loaddata teachers/teacher_fixtures.json`
++ `python manage.py loaddata academics/academic_fixtures.json`
++ `python manage.py loaddata students\fixtures\offline_applications.json`
++ `python manage.py loaddata students\fixtures\online_admitted.json`
++ `python manage.py loaddata students\fixtures\online_paid.json`
++ `python manage.py loaddata students\fixtures\online_rejected.json`
++ `python manage.py loaddata students\fixtures\online_unpaid.json`
 
-then for result, subjects, combinations you can run your script or just 
-create data manually for now.
 
 * APPLY CARD INFO AT `admission` link
 `card number: 5555555555554444`
 `expiracy: any valid future date` 
+
+# Working Components:
+* Create application for admission manually (it will save candidate as offline admission candidate)
+* Online application for admission (payment and admission process handled automatically)
+* Handle payment, admission, rejection, update candidate's status after communication
+* Assign student to an academic batch, class
+* Manage counseling (admission) dashboard with data visualization (download/view pdf reports)
+* CRUD departments, subjects, teachers, academic session, semester; import subjects from csv file
+* Teacher list view, students list view, designation CRUD
+* Create users, users list, view user groups and permissions
+
+
+<br>
+
+# Contact me:
+- [Facebook](https://www.facebook.com/tareqmonwer1/)
+- [Linkedin](linkedin.com/in/tareqmonwer)
+- [Twitter](https://twitter.com/TareqMonwerDPI)
+- [Github](https://github.com/TareqMonwer)
+- [Website](www.tareqmonwer.com)
+- email: tareqmonwer137@gmail.com

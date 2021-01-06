@@ -1,5 +1,7 @@
 from datetime import datetime
+
 from django.urls import path, register_converter
+
 from .views import students_views as views
 from .views import pdf_views
 from .views import report_views
@@ -8,6 +10,7 @@ app_name = 'students'
 
 
 class DateConverter:
+     # Convert a string passed as date in datetime object
      regex = '\d{4}-\d{2}-\d{2}'
 
      def to_python(self, value):
@@ -25,6 +28,7 @@ urlpatterns = [
      path('pdf/', pdf_views.test_pdf, name='test_pdf'),
      path('add/', views.add_student_view, name='add_student'),
      path('all/', views.students_view, name='all_student'),
+     path('alumnus/', views.AlumnusListView.as_view(), name='alumnus'),
      path('applicants/', views.all_applicants, name='all_applicants'),
      path('applicants/unpaid/', views.unpaid_registrants, name='unpaid_registrants'),
      path('applicants/unpaid/mark-paid/', views.mark_as_paid_or_unpaid,
@@ -37,6 +41,8 @@ urlpatterns = [
           name='admission_confirmation'),
      path('api/batches/<int:department_code>/', views.get_json_batch_data,
           name='get_json_batch_data'),
+     path('api/yearly-graph/', report_views.yearly_graph_api,
+          name='yearly_graph_api'),
      path('online-applicants/<int:pk>/admit/', views.admit_student,
           name='admit_student'),
      path('paid-registrants/', views.paid_registrants, 
@@ -45,9 +51,9 @@ urlpatterns = [
           name='rejected_registrants'),
      path('update-registrant/<int:pk>/', views.update_online_registrant, 
           name='update_online_registrant'),
-     path('update/<int:pk>/', views.student_update_view.as_view(),
+     path('update/<int:pk>/', views.StudentUpdateView.as_view(),
           name='update_student'),
-     path('<int:pk>/detail/', views.student_detail_view.as_view(),
+     path('<int:pk>/detail/', views.StudentDetailsView.as_view(),
           name='student_details'),
      path('<int:pk>/delete/', views.student_delete_view, name='delete_student'),
      path('<int:pk>/students/', views.students_by_department_view,

@@ -1,19 +1,24 @@
 from datetime import date, timedelta, datetime
 from collections import OrderedDict
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, UpdateView
+from django.views.generic import ListView, DetailView, UpdateView
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from academics.views import user_is_staff
-from academics.models import Department, Semester, Subject, Batch, AcademicSession
+from academics.models import (
+    Department, Semester, Subject, Batch, AcademicSession
+)
+from result.models import SubjectGroup
 from students.models import Student, AdmissionStudent, CounselingComment
-from students.forms import (StudentForm, AdmissionForm,
-                            StudentRegistrantUpdateForm,
-                            CounselingDataForm)
-
+from students.forms import (
+    StudentForm, AdmissionForm, StudentRegistrantUpdateForm,
+    CounselingDataForm, StudentUpdateForm
+)
+from students.filters import AlumniFilter
 from students.tasks import send_admission_confirmation_email
 
 
@@ -29,13 +34,21 @@ def students_dashboard_index(request):
     rejected_applicants = AdmissionStudent.objects.filter(rejected=True)
 
     # List of months since first application registration date
-    first_application_date = AdmissionStudent.objects.order_by('created')[0].created.date()
-    last_application_date = date.today()
-    dates = [str(first_application_date), str(last_application_date)]
-    months_start, months_end = [datetime.strptime(_, '%Y-%m-%d') for _ in dates]
-    # List of month to display options in student dashboard index
-    month_list = OrderedDict(((months_start + timedelta(_)).strftime(r"%B-%Y"), None) for _ in
-                            range((months_end - months_start).days)).keys()
+    try:
+        first_application_date = AdmissionStudent.objects.order_by(
+            'created')[0].created.date()
+        last_application_date = date.today()
+        dates = [str(first_application_date), str(last_application_date)]
+        months_start, months_end = [
+            datetime.strptime(_, '%Y-%m-%d') for _ in dates
+        ]
+        # List of month to display options in student dashboard index
+        month_list = OrderedDict(
+            ((months_start + timedelta(_)).strftime(r"%B-%Y"), None) for _ in
+            range((months_end - months_start).days)
+        ).keys()
+    except IndexError:
+        month_list = []
 
     context = {
         'all_applicants': all_applicants,
@@ -280,13 +293,11 @@ def students_view(request):
     and semesters list.
     """
     all_students = Student.objects.select_related(
-        'department', 'semester', 'ac_session').all()
-    departments = Department.objects.select_related(
-        'head').all()
-    context = {'students': all_students,
-               'departments': departments,
-               }
-    return render(request, 'students/students_list.html', context)
+        'admission_student', 'semester', 'ac_session').all()
+    context = {
+        'students': all_students,
+    }
+    return render(request, 'students/list/students_list.html', context)
 
 
 @user_passes_test(user_is_staff)
@@ -298,13 +309,12 @@ def students_by_department_view(request, pk):
     return render(request, 'students/students_by_department.html', context)
 
 
-class student_update_view(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class StudentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     """
     renders a student update form to update students details.
     """
     model = Student
-    fields = ['photo', 'semester', 'mobile',
-              'guardian_mobile', 'email']
+    form_class = StudentUpdateForm
     template_name = 'students/update_student.html'
 
     def test_func(self):
@@ -315,12 +325,19 @@ class student_update_view(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return redirect('account:home')
         return redirect('account:login')
 
+    def post(self, request, pk, *args, **kwargs):
+        obj = get_object_or_404(Student, pk=pk)
+        form = StudentUpdateForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            return redirect('students:student_details', pk=obj.pk)
+
     def get_success_url(self):
         student_id = self.kwargs['pk']
         return reverse_lazy('students:student_details', kwargs={'pk': student_id})
 
 
-class student_detail_view(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class StudentDetailsView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = Student
     template_name = 'students/student_details.html'
 
@@ -340,15 +357,14 @@ class student_detail_view(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         student = Student.objects.get(pk=pk)
         # get student object
         # for showing subjects in option form
-        try:
-            student_subject_qs = student.has_subjects()[0]
-            student_subject_qs = student_subject_qs.subjects.all()
-            context['subjects'] = student_subject_qs
-        except IndexError:
-            context['subjects'] = None
+        student_subject_qs = SubjectGroup.objects.filter(
+            department=student.admission_student.choosen_department,
+            semester=student.semester
+        )
+        context['subjects'] = student_subject_qs
         # getting result objects
-        semesters = range(1, student.semester.number + 1)
-        context['semesters'] = semesters
+        results = student.results.all()
+        context['results'] = results
         return context
 
 
@@ -357,3 +373,20 @@ def student_delete_view(request, pk):
     student = Student.objects.get(pk=pk)
     student.delete()
     return redirect('students:all_student')
+
+
+class AlumnusListView(ListView):
+    model = Student
+    context_object_name = 'alumnus'
+    template_name = 'students/list/alumnus.html'
+
+    def get_queryset(self):
+        queryset = Student.alumnus.all()
+        return queryset
+    
+    def get_context_data(self, *args, object_list=None, **kwargs):
+        ctx = super().get_context_data(*args, object_list=object_list, **kwargs)
+        alumnus = Student.alumnus.all()
+        f = AlumniFilter(self.request.GET, queryset=alumnus)
+        ctx['filter'] = f
+        return ctx
